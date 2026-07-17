@@ -1,7 +1,7 @@
 const Redis = require('ioredis');
 const { redisUrl } = require('../config/env');
 
-const redis = new Redis(redisUrl);
+const redis = new Redis(redisUrl, { maxRetriesPerRequest: 1 });
 
 async function getCachedWeather(cityCode){
     const cachedData = await redis.get(cityCode);

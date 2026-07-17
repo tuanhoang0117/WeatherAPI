@@ -5,7 +5,12 @@ async function getWeatherForCity(cityCode) {
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(cityCode)}?unitGroup=us&key=${weatherApiKey}&contentType=json`;
 
     try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, {timeout: 5000});
+
+        if (!response.data || !response.data.currentConditions) {
+            throw new Error(`Invalid response from weather API for city code ${cityCode}`);
+        }
+        
         return {
             city: response.data.resolvedAddress,
             temperature: response.data.currentConditions.temp,
