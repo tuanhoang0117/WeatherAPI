@@ -10,7 +10,7 @@ async function getWeatherForCity(cityCode) {
         if (!response.data || !response.data.currentConditions) {
             throw new Error(`Invalid response from weather API for city code ${cityCode}`);
         }
-        
+
         return {
             city: response.data.resolvedAddress,
             temperature: response.data.currentConditions.temp,
@@ -19,6 +19,13 @@ async function getWeatherForCity(cityCode) {
         };
     } catch (error) {
         console.error(`Error fetching weather data for city code ${cityCode}:`, error.message);
+
+        if (error.response && error.response.status === 400) {
+            error.statusCode = 404;
+        } else {
+            error.statusCode = 502;
+        }
+
         throw error;
     }
 
