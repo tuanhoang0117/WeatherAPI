@@ -1,11 +1,12 @@
 const express = require('express');
+const rateLimiter = require('./middleware/rateLimiter');
 const weatherRoutes = require('./routes/weather');
 const { port } = require('./config/env');
 
 const app = express();
 const PORT = port;
 
-app.use('/weather', weatherRoutes);
+app.use('/weather', rateLimiter, weatherRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err);
