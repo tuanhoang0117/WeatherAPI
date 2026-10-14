@@ -1,0 +1,6 @@
+node_modules
+.env
+.git
+test
+Documentation
+.DS_Store
