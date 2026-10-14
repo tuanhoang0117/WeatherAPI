@@ -19,7 +19,18 @@ A backend API that acts as a proxy and cache in front of the [Visual Crossing](h
 - [Redis](https://redis.io/) running locally (or accessible via a connection URL)
 - A free [Visual Crossing API key](https://www.visualcrossing.com/weather-api)
 
-## Setup
+## Quick Start (Docker)
+
+```
+git clone git@github.com:tuanhoang0117/WeatherAPI.git
+cd WeatherAPI
+cp .env.example .env   # add your WEATHER_API_KEY
+docker compose up --build
+```
+
+Starts the API on port 3000 and a Redis container. No local Redis install needed.
+
+## Local Setup (without Docker)
 
 1. Clone the repo and install dependencies:
    ```
@@ -87,11 +98,23 @@ These error responses share the same shape: `{ "error": "..." }`. Requesting `/w
 
 ## Testing
 
-Backend endpoints were manually tested using [Postman](https://www.postman.com/), including:
-- Successful requests against real cities
-- Cache-hit vs. cache-miss response times
-- Error cases (`400`, `404`, `502`)
-- Rate limiting (`429`) via Postman's Collection Runner
+```
+npm test
+```
+
+7 automated tests (Node's built-in test runner + Supertest) run on every push via GitHub Actions. Redis and Visual Crossing are mocked, so tests need no network or API key. They cover:
+- Cache hit skips the upstream call; cache miss fetches and stores under a lowercase key
+- Unknown city returns `404`; upstream failure returns `502`
+- Redis outage still serves data from the provider
+- 61st request in the rate-limit window returns `429`
+- Health check
+
+## Design Notes
+
+- **Cache-aside:** the route checks Redis first and only calls Visual Crossing on a miss. Measured locally across 5 cities: median 138 ms uncached vs 1.6 ms cached.
+- **Fail-open on Redis errors:** if Redis is down, the request still goes to the provider instead of failing. The cache is an optimization, not a dependency.
+- **Case-insensitive cache keys:** `Oslo` and `OSLO` share one cache entry, so repeat requests aren't wasted on capitalization.
+- **Error mapping:** Visual Crossing's `400` for an unknown location becomes a `404` for the client; any other upstream failure becomes `502`, so clients can tell "bad input" from "provider down."
 
 ## Tech Stack
 
