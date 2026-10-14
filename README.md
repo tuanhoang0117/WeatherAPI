@@ -1,4 +1,5 @@
 # WeatherAPI
+![Tests](https://github.com/tuanhoang0117/WeatherAPI/actions/workflows/test.yml/badge.svg)
 
 **Project URL:** https://roadmap.sh/projects/weather-api-wrapper-service
 
