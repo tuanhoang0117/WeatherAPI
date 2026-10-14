@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test --test-force-exit"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,8 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.0",
     "ioredis": "^5.11.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
   }
 }
