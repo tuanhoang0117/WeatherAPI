@@ -9,7 +9,7 @@ A backend API that acts as a proxy and cache in front of the [Visual Crossing](h
 - `GET /weather/:cityCode` — current weather for a city
 - `GET /health` — basic liveness check
 - Redis caching (cache-aside pattern) with a configurable TTL
-- Rate limiting per IP
+- Rate limiting per IP (60 requests per 15 minutes on `/weather`)
 - Structured error responses (`400`/`404`/`502`) instead of generic failures
 
 ## Prerequisites
@@ -37,7 +37,7 @@ A backend API that acts as a proxy and cache in front of the [Visual Crossing](h
    | `WEATHER_API_KEY` | Your Visual Crossing API key |
    | `REDIS_URL` | Redis connection string (defaults to `redis://localhost:6379`) |
    | `PORT` | Port the server listens on (defaults to `3000`) |
-   | `CACHE_TTL_SECONDS` | How long cached weather data stays valid |
+   | `CACHE_TTL_SECONDS` | How long cached weather data stays valid, in seconds (defaults to `3600`; `.env.example` sets `43200`, i.e. 12 hours) |
 
 3. Make sure Redis is running:
    ```
@@ -67,20 +67,22 @@ curl http://localhost:3000/weather/Sacramento
 **Success response — `200 OK`**
 ```json
 {
-  "city": "Sacramento",
+  "city": "Sacramento, CA, United States",
   "temperature": 85.7,
   "unit": "F",
   "conditions": "Clear"
 }
 ```
 
+`city` is the full location name Visual Crossing resolves the city code to.
+
 **Error responses**
-- `400 Bad Request` — missing or empty city code
+- `400 Bad Request` — city code is blank (e.g. only whitespace)
 - `404 Not Found` — city not recognized by Visual Crossing
-- `429 Too Many Requests` — rate limit exceeded
+- `429 Too Many Requests` — rate limit exceeded (60 requests per 15 minutes per IP)
 - `502 Bad Gateway` — Visual Crossing is unreachable or erroring
 
-All error responses share the same shape: `{ "error": "..." }`.
+These error responses share the same shape: `{ "error": "..." }`. Requesting `/weather/` with no city code at all doesn't match the route and gets Express's default `404` page instead.
 
 ## Testing
 
