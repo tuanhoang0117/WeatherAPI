@@ -16,14 +16,14 @@ router.get("/:cityCode", async (req, res) => {
   let weatherData = null;
 
   try {
-    weatherData = await getCachedWeather(cacheKey);
+    weatherData = await cache.getCachedWeather(cacheKey);
   } catch (error) {
     console.error("Error fetching cached weather data:", error);
   }
 
   if (!weatherData) {
     try {
-      weatherData = await getWeatherForCity(rawCityCode);
+      weatherData = await weatherProvider.getWeatherForCity(rawCityCode);
       res.json(weatherData);
     } catch (error) {
       const statusCode = error.statusCode || 500;
@@ -32,7 +32,7 @@ router.get("/:cityCode", async (req, res) => {
       return res.status(statusCode).json({ error: message });
     }
     try {
-      await setCachedWeather(cacheKey, weatherData, cacheTtlSeconds);
+      await cache.setCachedWeather(cacheKey, weatherData, cacheTtlSeconds);
     } catch (error) {
       console.error("Error setting cached weather data:", error);
     }
